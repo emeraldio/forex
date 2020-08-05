@@ -47,9 +47,18 @@ export const getStaticProps = async (context) => ({
 });
 
 export default function Home({ currencies }) {
+  const params = new URLSearchParams(
+    typeof window !== "undefined" && window.location.search
+  );
   const [loading, setLoading] = useState(false);
-  const [from, setFrom] = useState({ currency: "USD", amount: 1 });
-  const [to, setTo] = useState({ currency: "GBP", amount: "" });
+  const [from, setFrom] = useState({
+    currency: params.get("from") || "USD",
+    amount: params.get("amount") || 1,
+  });
+  const [to, setTo] = useState({
+    currency: params.get("to") || "GBP",
+    amount: "",
+  });
   const [rates, setRates] = useState(null);
 
   useEffect(() => {
@@ -68,6 +77,19 @@ export default function Home({ currencies }) {
     const amount = rates[today] * from.amount;
     setTo({ ...to, amount });
   }, [rates, to.amount, from.amount]);
+
+  useEffect(() => {
+    const params = new URLSearchParams({
+      from: from.currency,
+      to: to.currency,
+      amount: from.amount,
+    });
+    window.history.pushState(
+      null,
+      "",
+      decodeURIComponent(`${window.location.pathname}?${params}`)
+    );
+  }, [from.currency, to.currency, from.amount]);
 
   return (
     <Layout>
