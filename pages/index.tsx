@@ -15,18 +15,24 @@ const Column = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  flex-wrap: row wrap;
 `;
+
 const FullHeightColumn = styled(Column)`
   height: 100vh;
 `;
 
 const Row = styled(Column)`
   flex-direction: row;
+  @media only screen and (max-width: 600px) {
+    flex-direction: column;
+  }
 `;
 
 const Padding = styled.div`
   padding: 16px;
 `;
+
 const Big = styled.div`
   font-size: 3em;
 `;
@@ -46,11 +52,13 @@ const Input = `
     border-color: #eee;
   }
 `;
+
 const Amount = styled.input`
   ${Input}
-  width: 256px;
   font-size: 3em;
   margin: 16px 32px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const Currency = styled.select`
@@ -88,6 +96,10 @@ const Layout = ({ children }) => (
   <FullHeightColumn>
     <Head>
       <title>Currency Exchange Rates</title>
+      <meta
+        name="viewport"
+        content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"
+      />
     </Head>
     <GoogleFonts href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" />
     <Global />
