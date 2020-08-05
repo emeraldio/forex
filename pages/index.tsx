@@ -1,15 +1,61 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
-import styled from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
+import GoogleFonts from "next-google-fonts";
 
-const Flex = styled.div`
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
+const Global = createGlobalStyle`
+  body {
+    margin: 0;
+    font-family: 'Space Mono', monospace;
+  }
 `;
 
-const Row = styled(Flex)`
+const Column = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+`;
+const FullHeightColumn = styled(Column)`
+  height: 100vh;
+`;
+
+const Row = styled(Column)`
   flex-direction: row;
+`;
+
+const Padding = styled.div`
+  padding: 16px;
+`;
+const Big = styled.div`
+  font-size: 3em;
+`;
+
+const Input = `
+  font-family: "Space Mono", monospace;
+  outline: 0;
+  border: 0;
+  text-align: center;
+  transition: all 0.1s ease;
+  border: 1px solid transparent;
+  text-overflow: ellipsis ellipsis;
+  :hover {
+    background: #eee;
+  }
+  :focus {
+    border-color: #eee;
+  }
+`;
+const Amount = styled.input`
+  ${Input}
+  width: 256px;
+  font-size: 3em;
+  margin: 16px 32px;
+`;
+
+const Currency = styled.select`
+  ${Input}
+  font-size: 1.2em;
 `;
 
 async function getCurrencies() {
@@ -18,7 +64,7 @@ async function getCurrencies() {
   return Object.keys(json.rates).sort();
 }
 
-async function getHistoricalRates(from, to, amount) {
+async function getHistoricalRates(from, to) {
   const res = await fetch(
     `https://api.exchangeratesapi.io/history?start_at=2020-01-01&end_at=2020-06-04&base=${from}&symbols=${to}`
   );
@@ -38,20 +84,29 @@ export async function getStaticProps(context) {
   };
 }
 
+const Layout = ({ children }) => (
+  <FullHeightColumn>
+    <Head>
+      <title>Currency Exchange Rates</title>
+    </Head>
+    <GoogleFonts href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" />
+    <Global />
+    {children}
+  </FullHeightColumn>
+);
+
 export default function Home({ currencies }) {
   const [loading, setLoading] = useState(false);
   const [from, setFrom] = useState({ currency: "USD", amount: 1 });
-  const [to, setTo] = useState({ currency: "GBP", amount: null });
+  const [to, setTo] = useState({ currency: "GBP", amount: "" });
   const [rates, setRates] = useState(null);
 
   useEffect(() => {
     setLoading(true);
-    getHistoricalRates(from.currency, to.currency, from.amount).then(
-      (rates) => {
-        setRates(rates);
-        setLoading(false);
-      }
-    );
+    getHistoricalRates(from.currency, to.currency).then((rates) => {
+      setRates(rates);
+      setLoading(false);
+    });
   }, [from.currency, to.currency]);
 
   useEffect(() => {
@@ -59,39 +114,51 @@ export default function Home({ currencies }) {
       return;
     }
     const today = Object.keys(rates).sort().pop();
-    const amount = rates[today];
+    const amount = rates[today] * from.amount;
     setTo({ ...to, amount });
-  }, [rates, to.currency, from.amount]);
+  }, [rates, to.amount, from.amount]);
 
   return (
-    <Flex>
-      <Head>
-        <title>Currency Exchange Rates</title>
-      </Head>
-
+    <Layout>
       <Row>
-        <div>{from.amount}</div>
-        <select
-          value={from.currency}
-          onChange={(e) => setFrom({ ...from, currency: e.target.value })}
-        >
-          {currencies.map((currency) => (
-            <option key={currency}>{currency}</option>
-          ))}
-        </select>
-      </Row>
+        <Column>
+          <Amount
+            type="number"
+            value={from.amount}
+            onChange={(e) => setFrom({ ...from, amount: e.target.value })}
+          />
+          <Currency
+            value={from.currency}
+            onChange={(e) => setFrom({ ...from, currency: e.target.value })}
+          >
+            {currencies.map((currency) => (
+              <option key={currency}>{currency}</option>
+            ))}
+          </Currency>
+        </Column>
 
-      <Row>
-        <div>{to.amount}</div>
-        <select
-          value={to.currency}
-          onChange={(e) => setTo({ ...to, currency: e.target.value })}
-        >
-          {currencies.map((currency) => (
-            <option key={currency}>{currency}</option>
-          ))}
-        </select>
+        <Padding>
+          <Big>=</Big>
+        </Padding>
+
+        <Column>
+          <Amount
+            readOnly
+            disabled={loading}
+            value={to.amount}
+            onFocus={(e) => e.target.select()}
+          />
+          <Currency
+            value={to.currency}
+            onChange={(e) => setTo({ ...to, currency: e.target.value })}
+            disabled={loading}
+          >
+            {currencies.map((currency) => (
+              <option key={currency}>{currency}</option>
+            ))}
+          </Currency>
+        </Column>
       </Row>
-    </Flex>
+    </Layout>
   );
 }

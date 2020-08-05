@@ -10,6 +10,7 @@
   "dependencies": {
     "@types/styled-components": "^5.1.2",
     "next": "9.5.1",
+    "next-google-fonts": "^1.2.1",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "styled-components": "^5.1.1"
