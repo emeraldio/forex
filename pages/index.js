@@ -1,4 +1,9 @@
 import Head from "next/head";
+import styled from "styled-components";
+
+const Wrapper = styled.div`
+  background: red;
+`;
 
 export default function Home() {
   return (
@@ -7,7 +12,7 @@ export default function Home() {
         <title>Forex</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      hello world
+      <Wrapper>hello world</Wrapper>
     </div>
   );
 }
