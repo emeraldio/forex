@@ -1,33 +1,7 @@
 import { useState, useEffect } from "react";
-import Head from "next/head";
-import styled, { createGlobalStyle } from "styled-components";
-import GoogleFonts from "next-google-fonts";
-
-const Global = createGlobalStyle`
-  body {
-    margin: 0;
-    font-family: 'Space Mono', monospace;
-  }
-`;
-
-const Column = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  flex-wrap: row wrap;
-`;
-
-const FullHeightColumn = styled(Column)`
-  height: 100vh;
-`;
-
-const Row = styled(Column)`
-  flex-direction: row;
-  @media only screen and (max-width: 600px) {
-    flex-direction: column;
-  }
-`;
+import styled from "styled-components";
+import Layout, { Row, Column } from "components/layout";
+import { getHistoricalRates, getCurrencies } from "lib/api";
 
 const Padding = styled.div`
   padding: 16px;
@@ -66,46 +40,11 @@ const Currency = styled.select`
   font-size: 1.2em;
 `;
 
-async function getCurrencies() {
-  const res = await fetch("https://api.exchangeratesapi.io/latest");
-  const json = await res.json();
-  return Object.keys(json.rates).sort();
-}
-
-async function getHistoricalRates(from, to) {
-  const res = await fetch(
-    `https://api.exchangeratesapi.io/history?start_at=2020-01-01&end_at=2020-06-04&base=${from}&symbols=${to}`
-  );
-  const json = await res.json();
-  const days = Object.keys(json.rates).sort();
-  return days.reduce((map, day) => {
-    map[day] = json.rates[day][to];
-    return map;
-  }, {});
-}
-
-export async function getStaticProps(context) {
-  return {
-    props: {
-      currencies: await getCurrencies(),
-    },
-  };
-}
-
-const Layout = ({ children }) => (
-  <FullHeightColumn>
-    <Head>
-      <title>Currency Exchange Rates</title>
-      <meta
-        name="viewport"
-        content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"
-      />
-    </Head>
-    <GoogleFonts href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" />
-    <Global />
-    {children}
-  </FullHeightColumn>
-);
+export const getStaticProps = async (context) => ({
+  props: {
+    currencies: await getCurrencies(),
+  },
+});
 
 export default function Home({ currencies }) {
   const [loading, setLoading] = useState(false);
