@@ -29,6 +29,7 @@ const Input = `
   border: 1px solid transparent;
   border-radius: 4px;
   text-overflow: ellipsis ellipsis;
+  background: transparent;
   :hover {
     background: rgba(0, 57, 39, 0.1);
   }

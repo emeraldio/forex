@@ -9,9 +9,21 @@ const Global = createGlobalStyle`
     font-family: 'Space Mono', monospace;
     font-size: 16px;
     color: rgba(26, 57, 39, 0.9);
+
   }
   h1, h2, h3 {
     font-family: 'Lora', serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(0, 0, 0, 0.9);
+    }
+
+    input, select {
+      color: #fff !important;
+    }
   }
 `;
 
