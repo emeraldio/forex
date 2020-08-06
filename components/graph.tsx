@@ -38,7 +38,6 @@ const RateWindowPill = styled.div<{ active: boolean }>`
 `;
 
 const CustomTooltip = ({ from, to }: { from: Currency; to: Currency }) => ({
-  active,
   payload,
 }: TooltipProps) =>
   payload &&

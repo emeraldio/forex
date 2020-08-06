@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { ReactNode, ReactElement } from "react";
 import Head from "next/head";
 import styled, { createGlobalStyle } from "styled-components";
 import GoogleFonts from "next-google-fonts";
@@ -34,7 +34,7 @@ const FullHeightColumn = styled(Column)`
   height: 100vh;
 `;
 
-const Layout: FC<any> = ({ children }) => (
+const Layout = ({ children }: { children?: ReactNode[] }): ReactElement => (
   <FullHeightColumn>
     <Head>
       <title>Currency Converter</title>

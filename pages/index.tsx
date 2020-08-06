@@ -61,11 +61,13 @@ type Side = {
 };
 
 const Home = (): ReactElement => {
+  const [rates, setRates] = useState<Rates | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // pull to/from/rateWindow from url
   const params = new URLSearchParams(
     typeof window === "undefined" ? {} : window.location.search
   );
-  const [rates, setRates] = useState<Rates | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
   const [from, setFrom] = useState<Side>({
     currency: (params.get("from") || "USD") as Currency,
     amount: parseFloat(params.get("amount") || "1"),
@@ -78,6 +80,7 @@ const Home = (): ReactElement => {
     (params.get("rateWindow") as RateWindow) || RateWindows.Year
   );
 
+  // load rates on mount
   useEffect(() => {
     setLoading(true);
     getHistoricalRates(from.currency, to.currency, rateWindow).then((rates) => {
@@ -86,6 +89,7 @@ const Home = (): ReactElement => {
     });
   }, [from.currency, to.currency, rateWindow]);
 
+  // whenever rates or amounts change, recalculate to
   useEffect(() => {
     if (!rates || !from.amount) {
       return;
@@ -101,6 +105,7 @@ const Home = (): ReactElement => {
     setTo({ ...to, amount });
   }, [rates, to.amount, from.amount]);
 
+  // update the URL whenever from/to/rateWindow changes
   useEffect(() => {
     const params = new URLSearchParams({
       from: from.currency,
@@ -115,6 +120,7 @@ const Home = (): ReactElement => {
     );
   }, [from.currency, to.currency, from.amount, rateWindow]);
 
+  // flip to/from currencies around when = is clicked
   const handleFlip = useCallback(() => {
     const newFrom = to.currency;
     setTo({ ...to, currency: from.currency });
