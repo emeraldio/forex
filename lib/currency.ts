@@ -1,4 +1,6 @@
-export default {
+export type Currency = keyof typeof CURRENIES;
+
+const CURRENIES = {
   AUD: "🇦🇺",
   BGN: "🇧🇬",
   BRL: "🇧🇷",
@@ -32,3 +34,5 @@ export default {
   USD: "🇺🇸",
   ZAR: "🇿🇦",
 };
+
+export default CURRENIES;

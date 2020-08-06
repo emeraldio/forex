@@ -1,21 +1,18 @@
-import { useRef, useState, useMemo } from "react";
+import { useMemo, ReactElement, Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
 import moment from "moment";
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  Bar,
-  Brush,
-  ReferenceLine,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
-  Legend,
+  TooltipProps,
 } from "recharts";
 import { Row, Column } from "components/layout";
-import { API_DATE, RateWindow } from "lib/api";
+import { API_DATE, RateWindow, RateWindows, Rates } from "lib/api";
+import { Currency } from "lib/currency";
 
 const MaxWidth = styled(Column)`
   width: 512px;
@@ -26,7 +23,7 @@ const MaxWidth = styled(Column)`
   }
 `;
 
-const RateWindowPill = styled.div`
+const RateWindowPill = styled.div<{ active: boolean }>`
   font-size: 12px;
   padding: 4px 8px;
   border-radius: 4px;
@@ -40,21 +37,31 @@ const RateWindowPill = styled.div`
   ${(props) => props.active && `background: rgba(0, 57, 39, 0.2);`}
 `;
 
-const CustomTooltip = ({ from, to }) => ({ active, payload }) =>
-  active && (
+const CustomTooltip = ({ from, to }: { from: Currency; to: Currency }) => ({
+  active,
+  payload,
+}: TooltipProps) =>
+  payload &&
+  payload[0] && (
     <small>
       On {payload[0].payload.day}, 1 {from} = {payload[0].value} {to}
     </small>
   );
 
-const Graph = ({ from, to, rates, rateWindow, setRateWindow }) => {
-  const containerRef = useRef(null);
-  const [width, setWidth] = useState(512);
-
+const Graph = ({
+  from,
+  to,
+  rates,
+  rateWindow,
+  setRateWindow,
+}: {
+  from: Currency;
+  to: Currency;
+  rates: Rates;
+  rateWindow: RateWindow;
+  setRateWindow: Dispatch<SetStateAction<RateWindow>>;
+}): ReactElement | null => {
   const graphData = useMemo(() => {
-    if (!rates) {
-      return null;
-    }
     const days = Object.keys(rates);
     return days.reduce((data, day) => {
       data.push({
@@ -62,7 +69,7 @@ const Graph = ({ from, to, rates, rateWindow, setRateWindow }) => {
         value: rates[day],
       });
       return data;
-    }, []);
+    }, [] as { day: string; value: number }[]);
   }, [rates]);
 
   return (
@@ -85,11 +92,11 @@ const Graph = ({ from, to, rates, rateWindow, setRateWindow }) => {
       </ResponsiveContainer>
 
       <Row>
-        {Object.keys(RateWindow).map((rw) => (
+        {Object.keys(RateWindows).map((rw) => (
           <RateWindowPill
-            active={rateWindow === RateWindow[rw]}
+            active={rateWindow === RateWindows[rw]}
             key={rw}
-            onClick={() => setRateWindow(RateWindow[rw])}
+            onClick={() => setRateWindow(RateWindows[rw])}
           >
             {rw}
           </RateWindowPill>

@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { ReactElement, useState, useEffect, useCallback } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import { validateFloat } from "lib/util";
-import { getHistoricalRates, RateWindow } from "lib/api";
-import CURRENCIES from "lib/currency";
+import { getHistoricalRates, RateWindow, RateWindows, Rates } from "lib/api";
+import CURRENCIES, { Currency } from "lib/currency";
 import Layout, { Row, Column } from "components/layout";
 import Graph from "components/graph";
 
@@ -37,7 +37,7 @@ const Input = `
   }
 `;
 
-const Amount = styled.input`
+const AmountInput = styled.input`
   ${Input}
   font-size: 2em;
   margin: 16px 32px;
@@ -45,7 +45,7 @@ const Amount = styled.input`
   box-sizing: border-box;
 `;
 
-const Currency = styled.select`
+const CurrencyDropdown = styled.select`
   ${Input}
   font: inherit;
   appearance: none;
@@ -55,22 +55,27 @@ const Currency = styled.select`
   }
 `;
 
-const Home = () => {
+type Side = {
+  currency: Currency;
+  amount: number | null;
+};
+
+const Home = (): ReactElement => {
   const params = new URLSearchParams(
-    typeof window !== "undefined" && window.location.search
+    typeof window === "undefined" ? {} : window.location.search
   );
-  const [loading, setLoading] = useState(false);
-  const [from, setFrom] = useState({
-    currency: params.get("from") || "USD",
-    amount: params.get("amount") || 1,
+  const [rates, setRates] = useState<Rates | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [from, setFrom] = useState<Side>({
+    currency: (params.get("from") || "USD") as Currency,
+    amount: parseFloat(params.get("amount") || "1"),
   });
-  const [to, setTo] = useState({
-    currency: params.get("to") || "GBP",
-    amount: "",
+  const [to, setTo] = useState<Side>({
+    currency: (params.get("to") || "GBP") as Currency,
+    amount: null,
   });
-  const [rates, setRates] = useState(null);
-  const [rateWindow, setRateWindow] = useState<keyof RateWindow>(
-    params.get("rateWindow") || RateWindow.Year
+  const [rateWindow, setRateWindow] = useState<RateWindow>(
+    (params.get("rateWindow") as RateWindow) || RateWindows.Year
   );
 
   useEffect(() => {
@@ -82,13 +87,17 @@ const Home = () => {
   }, [from.currency, to.currency, rateWindow]);
 
   useEffect(() => {
-    if (!rates) {
+    if (!rates || !from.amount) {
       return;
     }
     const today = Object.keys(rates).sort().pop();
-    const rawAmount = rates[today] * from.amount;
+    const rawAmount = rates[today as string] * from.amount;
+    // if the number is whole, use that
+    // otherwise truncate to 4 decimal points
     const amount =
-      Math.ceil(rawAmount) === rawAmount ? rawAmount : rawAmount.toFixed(4);
+      Math.ceil(rawAmount) === rawAmount
+        ? rawAmount
+        : parseFloat(rawAmount.toFixed(4));
     setTo({ ...to, amount });
   }, [rates, to.amount, from.amount]);
 
@@ -96,7 +105,7 @@ const Home = () => {
     const params = new URLSearchParams({
       from: from.currency,
       to: to.currency,
-      amount: from.amount,
+      amount: String(from.amount),
       rateWindow,
     });
     window.history.pushState(
@@ -127,45 +136,49 @@ const Home = () => {
       <Column>
         <Row>
           <Column>
-            <Amount
-              value={from.amount}
+            <AmountInput
+              value={from.amount || ""}
               onChange={(e) =>
                 validateFloat(e.target.value) &&
-                setFrom({ ...from, amount: e.target.value })
+                setFrom({ ...from, amount: parseFloat(e.target.value) })
               }
             />
-            <Currency
+            <CurrencyDropdown
               value={from.currency}
-              onChange={(e) => setFrom({ ...from, currency: e.target.value })}
+              onChange={(e) =>
+                setFrom({ ...from, currency: e.target.value as Currency })
+              }
             >
               {Object.keys(CURRENCIES).map((currency) => (
                 <option key={currency} value={currency}>
-                  {currency} {CURRENCIES[currency]}
+                  {currency} {CURRENCIES[currency as Currency]}
                 </option>
               ))}
-            </Currency>
+            </CurrencyDropdown>
           </Column>
 
           <Flip onClick={handleFlip}>≈</Flip>
 
           <Column>
-            <Amount
+            <AmountInput
               readOnly
               disabled={loading}
-              value={to.amount}
+              value={to.amount || ""}
               onFocus={(e) => e.target.select()}
             />
-            <Currency
+            <CurrencyDropdown
               value={to.currency}
-              onChange={(e) => setTo({ ...to, currency: e.target.value })}
+              onChange={(e) =>
+                setTo({ ...to, currency: e.target.value as Currency })
+              }
               disabled={loading}
             >
               {Object.keys(CURRENCIES).map((currency) => (
                 <option key={currency} value={currency}>
-                  {currency} {CURRENCIES[currency]}
+                  {currency} {CURRENCIES[currency as Currency]}
                 </option>
               ))}
-            </Currency>
+            </CurrencyDropdown>
           </Column>
         </Row>
       </Column>

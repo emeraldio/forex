@@ -1,1 +1,2 @@
-export const validateFloat = (num) => !Number.isNaN(Number.parseFloat(num));
+export const validateFloat = (str: string): boolean =>
+  !Number.isNaN(Number.parseFloat(str));
