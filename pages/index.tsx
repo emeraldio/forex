@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import styled from "styled-components";
 import { validateFloat } from "lib/util";
 import { getHistoricalRates, getCurrencies } from "lib/api";
+import CURRENCIES from "lib/currency";
 import Layout, { Row, Column } from "components/layout";
 import Graph from "components/graph";
 
@@ -27,10 +28,10 @@ const Input = `
   border: 1px solid transparent;
   text-overflow: ellipsis ellipsis;
   :hover {
-    background: #eee;
+    background: rgba(0, 0, 0, 0.05);
   }
   :focus {
-    border-color: #eee;
+    background: rgba(0, 0, 0, 0.1);
   }
 `;
 
@@ -46,16 +47,10 @@ const Currency = styled.select`
   ${Input}
   font: inherit;
   appearance: none;
-  padding-right: 1em;
-  background-image: linear-gradient(45deg, transparent 50%, gray 50%),
-    linear-gradient(135deg, gray 50%, transparent 50%);
-  background-position: calc(100% - 20px) calc(1em + 2px),
-    calc(100% - 15px) calc(1em + 2px), calc(100% - 2.5em) 0.5em;
-  background-size: 5px 5px, 5px 5px, 1px 1.5em;
-  background-repeat: no-repeat;
+  cursor: pointer;
 `;
 
-const Home = ({ currencies }) => {
+const Home = () => {
   const params = new URLSearchParams(
     typeof window !== "undefined" && window.location.search
   );
@@ -117,7 +112,6 @@ const Home = ({ currencies }) => {
         <Row>
           <Column>
             <Amount
-              type="number"
               value={from.amount}
               onChange={(e) =>
                 validateFloat(e.target.value) &&
@@ -128,8 +122,10 @@ const Home = ({ currencies }) => {
               value={from.currency}
               onChange={(e) => setFrom({ ...from, currency: e.target.value })}
             >
-              {currencies.map((currency) => (
-                <option key={currency}>{currency}</option>
+              {Object.keys(CURRENCIES).map((currency) => (
+                <option key={currency} value={currency}>
+                  {currency} {CURRENCIES[currency]}
+                </option>
               ))}
             </Currency>
           </Column>
@@ -148,8 +144,10 @@ const Home = ({ currencies }) => {
               onChange={(e) => setTo({ ...to, currency: e.target.value })}
               disabled={loading}
             >
-              {currencies.map((currency) => (
-                <option key={currency}>{currency}</option>
+              {Object.keys(CURRENCIES).map((currency) => (
+                <option key={currency} value={currency}>
+                  {currency} {CURRENCIES[currency]}
+                </option>
               ))}
             </Currency>
           </Column>
