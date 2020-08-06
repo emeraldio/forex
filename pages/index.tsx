@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import Head from "next/head";
 import styled from "styled-components";
 import { validateFloat } from "lib/util";
 import { getHistoricalRates, RateWindow } from "lib/api";
@@ -6,7 +7,7 @@ import CURRENCIES from "lib/currency";
 import Layout, { Row, Column } from "components/layout";
 import Graph from "components/graph";
 
-const Logo = styled.h1`
+const Logo = styled.span`
   font-size: 3em;
   margin-bottom: 0;
 `;
@@ -69,7 +70,7 @@ const Home = () => {
   });
   const [rates, setRates] = useState(null);
   const [rateWindow, setRateWindow] = useState<keyof RateWindow>(
-    RateWindow.Year
+    params.get("rateWindow") || RateWindow.Year
   );
 
   useEffect(() => {
@@ -85,7 +86,9 @@ const Home = () => {
       return;
     }
     const today = Object.keys(rates).sort().pop();
-    const amount = rates[today] * from.amount;
+    const rawAmount = rates[today] * from.amount;
+    const amount =
+      Math.ceil(rawAmount) === rawAmount ? rawAmount : rawAmount.toFixed(4);
     setTo({ ...to, amount });
   }, [rates, to.amount, from.amount]);
 
@@ -94,13 +97,14 @@ const Home = () => {
       from: from.currency,
       to: to.currency,
       amount: from.amount,
+      rateWindow,
     });
     window.history.pushState(
       null,
       "",
       decodeURIComponent(`${window.location.pathname}?${params}`)
     );
-  }, [from.currency, to.currency, from.amount]);
+  }, [from.currency, to.currency, from.amount, rateWindow]);
 
   const handleFlip = useCallback(() => {
     const newFrom = to.currency;
@@ -110,6 +114,11 @@ const Home = () => {
 
   return (
     <Layout>
+      <Head>
+        <title>
+          Convert {from.currency} to {to.currency}
+        </title>
+      </Head>
       <Column>
         <Logo>💸</Logo>
         <h2>Currency Converter</h2>
@@ -137,7 +146,7 @@ const Home = () => {
             </Currency>
           </Column>
 
-          <Flip onClick={handleFlip}>=</Flip>
+          <Flip onClick={handleFlip}>≈</Flip>
 
           <Column>
             <Amount

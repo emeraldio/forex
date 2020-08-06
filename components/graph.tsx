@@ -67,8 +67,6 @@ const Graph = ({ from, to, rates, rateWindow, setRateWindow }) => {
 
   return (
     <MaxWidth>
-      <h3>Historical value</h3>
-
       <ResponsiveContainer aspect={4}>
         <AreaChart data={graphData}>
           <Tooltip content={CustomTooltip({ from, to })} />
