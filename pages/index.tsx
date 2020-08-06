@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import styled from "styled-components";
+import { validateFloat } from "lib/util";
 import { getHistoricalRates, getCurrencies } from "lib/api";
 import Layout, { Row, Column } from "components/layout";
 import Graph from "components/graph";
@@ -118,7 +119,10 @@ const Home = ({ currencies }) => {
             <Amount
               type="number"
               value={from.amount}
-              onChange={(e) => setFrom({ ...from, amount: e.target.value })}
+              onChange={(e) =>
+                validateFloat(e.target.value) &&
+                setFrom({ ...from, amount: e.target.value })
+              }
             />
             <Currency
               value={from.currency}
