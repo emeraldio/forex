@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import styled from "styled-components";
 import { validateFloat } from "lib/util";
-import { getHistoricalRates, getCurrencies } from "lib/api";
+import { getHistoricalRates, RateWindow } from "lib/api";
 import CURRENCIES from "lib/currency";
 import Layout, { Row, Column } from "components/layout";
 import Graph from "components/graph";
@@ -26,12 +26,13 @@ const Input = `
   text-align: center;
   transition: all 0.1s ease;
   border: 1px solid transparent;
+  border-radius: 4px;
   text-overflow: ellipsis ellipsis;
   :hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 57, 39, 0.1);
   }
   :focus {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 57, 39, 0.2);
   }
 `;
 
@@ -48,6 +49,9 @@ const Currency = styled.select`
   font: inherit;
   appearance: none;
   cursor: pointer;
+  :focus {
+    background: none;
+  }
 `;
 
 const Home = () => {
@@ -64,14 +68,17 @@ const Home = () => {
     amount: "",
   });
   const [rates, setRates] = useState(null);
+  const [rateWindow, setRateWindow] = useState<keyof RateWindow>(
+    RateWindow.Year
+  );
 
   useEffect(() => {
     setLoading(true);
-    getHistoricalRates(from.currency, to.currency).then((rates) => {
+    getHistoricalRates(from.currency, to.currency, rateWindow).then((rates) => {
       setRates(rates);
       setLoading(false);
     });
-  }, [from.currency, to.currency]);
+  }, [from.currency, to.currency, rateWindow]);
 
   useEffect(() => {
     if (!rates) {
@@ -154,14 +161,17 @@ const Home = () => {
         </Row>
       </Column>
 
-      {rates && <Graph from={from.currency} to={to.currency} rates={rates} />}
+      {rates && (
+        <Graph
+          from={from.currency}
+          to={to.currency}
+          rates={rates}
+          rateWindow={rateWindow}
+          setRateWindow={setRateWindow}
+        />
+      )}
     </Layout>
   );
 };
 
 export default Home;
-export const getStaticProps = async (context) => ({
-  props: {
-    currencies: await getCurrencies(),
-  },
-});

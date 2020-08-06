@@ -6,6 +6,7 @@ const Global = createGlobalStyle`
   body {
     margin: 0;
     font-family: 'Space Mono', monospace;
+    font-size: 16px;
     color: rgba(26, 57, 39, 0.9);
   }
   h1, h2, h3 {
