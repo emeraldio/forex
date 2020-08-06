@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import styled from "styled-components";
 import { getHistoricalRates, getCurrencies } from "lib/api";
 import Layout, { Row, Column } from "components/layout";
@@ -9,12 +9,11 @@ const Logo = styled.h1`
   margin-bottom: 0;
 `;
 
-const Padding = styled.div`
+const Flip = styled.div`
   padding: 16px;
-`;
-
-const Big = styled.div`
   font-size: 2em;
+  cursor: ew-resize;
+  user-select: none;
 `;
 
 const Input = `
@@ -100,6 +99,12 @@ const Home = ({ currencies }) => {
     );
   }, [from.currency, to.currency, from.amount]);
 
+  const handleFlip = useCallback(() => {
+    const newFrom = to.currency;
+    setTo({ ...to, currency: from.currency });
+    setFrom({ ...from, currency: newFrom });
+  }, [from, to]);
+
   return (
     <Layout>
       <Column>
@@ -120,14 +125,12 @@ const Home = ({ currencies }) => {
               onChange={(e) => setFrom({ ...from, currency: e.target.value })}
             >
               {currencies.map((currency) => (
-                <option key={currency}>{currency} 🇺🇸</option>
+                <option key={currency}>{currency}</option>
               ))}
             </Currency>
           </Column>
 
-          <Padding>
-            <Big>=</Big>
-          </Padding>
+          <Flip onClick={handleFlip}>=</Flip>
 
           <Column>
             <Amount
